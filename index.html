@@ -1539,6 +1539,20 @@
             </a>
 
             <div class="nav-actions">
+                <!-- User Session Profile & Log out -->
+                <div id="userProfileNav" style="display: none; align-items: center; gap: 6px;">
+                    <div class="storage-indicator" style="cursor: default;" title="Authenticated user">
+                        <span>👤 <strong id="loggedInUserLabel">User</strong></span>
+                    </div>
+                    <button class="btn-icon" onclick="logoutVault()" title="Sign Out of CloudVault">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+
                 <!-- S3 Status / Config trigger -->
                 <div class="storage-indicator" id="storageIndicatorBtn" onclick="openS3SettingsModal('config')" title="Click to configure Backend API">
                     <div class="status-dot" id="statusDot"></div>
@@ -1979,6 +1993,100 @@
                 <button class="btn-primary" onclick="saveS3Settings()">Save Configuration</button>
             </div>
         </div>
+    <!-- Authentication / Login Protection Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-box" style="max-width: 460px;">
+            <div class="modal-header" style="text-align: center; justify-content: center; position: relative; padding-top: 24px; padding-bottom: 12px;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
+                    <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h3 style="font-size: 19px; font-weight: 700; margin: 0; color: var(--text-primary);">Vault Access Protected</h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin: 0; max-width: 320px;">
+                        Sign in to securely access your personal S3 documents and sync configurations across all devices.
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-body" style="padding: 18px 24px;">
+                <!-- Error Alert Box -->
+                <div id="loginErrorMessage" style="display: none; padding: 11px 14px; border-radius: var(--radius-md); font-size: 13px; background: var(--accent-rose-bg); color: var(--accent-rose); border: 1px solid var(--accent-rose); margin-bottom: 16px; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                    <span id="loginErrorText" style="flex: 1;">Invalid username or password</span>
+                </div>
+
+                <form id="vaultLoginForm" onsubmit="handleVaultLogin(event)">
+                    <!-- API Endpoint (Expandable / Pre-filled) -->
+                    <div class="form-group" style="margin-bottom: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label style="margin-bottom: 0;">API Gateway URL</label>
+                            <button type="button" onclick="toggleApiInputCollapse()" id="toggleApiInputBtn" style="background: none; border: none; font-size: 12px; color: var(--primary); cursor: pointer; text-decoration: underline;">
+                                Configure URL
+                            </button>
+                        </div>
+                        <div id="loginApiUrlContainer" style="display: none;">
+                            <input type="text" id="loginApiUrl" placeholder="https://abc123xyz.execute-api.us-east-1.amazonaws.com" style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px;">
+                            <div class="form-help">Your AWS API Gateway endpoint connected to Lambda.</div>
+                        </div>
+                        <div id="loginApiUrlSummary" style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: var(--bg-surface-subtle); padding: 7px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                            Endpoint: <span id="loginApiUrlDisplay">Not configured</span>
+                        </div>
+                    </div>
+
+                    <!-- Username Field -->
+                    <div class="form-group" style="margin-bottom: 14px;">
+                        <label for="loginUsername">Username</label>
+                        <input type="text" id="loginUsername" placeholder="e.g. priyanshu" required autocomplete="username">
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label for="loginPassword" style="margin-bottom: 0;">Password</label>
+                            <button type="button" onclick="togglePasswordVisibility()" style="background: none; border: none; font-size: 12px; color: var(--text-muted); cursor: pointer;">
+                                <span id="togglePasswordLabel">Show</span>
+                            </button>
+                        </div>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+                    </div>
+
+                    <!-- Remember Me Option -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                        <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); cursor: pointer; margin-bottom: 0;">
+                            <input type="checkbox" id="loginRememberMe" checked style="width: auto; cursor: pointer;">
+                            Keep me logged in on this device
+                        </label>
+                    </div>
+
+                    <!-- Sign In Button -->
+                    <button type="submit" class="btn-primary" id="loginSubmitBtn" style="width: 100%; justify-content: center; padding: 12px; font-size: 14.5px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10 17 15 12 10 7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                        <span>Sign In & Unlock Vault</span>
+                    </button>
+                </form>
+
+                <div style="margin-top: 18px; padding: 12px; border-radius: var(--radius-md); background: var(--bg-surface-subtle); border: 1px solid var(--border); font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+                    <div style="display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--accent-emerald); margin-bottom: 4px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        100% Zero-Cost Serverless Protection
+                    </div>
+                    Uses cryptographically signed HMAC authorization in AWS Lambda. No AWS Cognito, RDS, or third-party fees.
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding: 12px 24px; justify-content: center;">
+                <button type="button" class="btn-batch" onclick="continueInLocalMode()" style="font-size: 12.5px;">
+                    Continue in Offline Local Vault
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Toast Notification Container -->
@@ -2148,12 +2256,274 @@
         }
 
         // ==========================================
+        // AUTHENTICATION & ZERO-COST ACCESS CONTROL
+        // ==========================================
+        let authSession = {
+            token: localStorage.getItem("cloudvault_token") || sessionStorage.getItem("cloudvault_token") || "",
+            username: localStorage.getItem("cloudvault_username") || sessionStorage.getItem("cloudvault_username") || "",
+            expiresAt: parseInt(localStorage.getItem("cloudvault_token_expiry") || "0", 10)
+        };
+
+        function getAuthHeaders() {
+            const headers = { "Content-Type": "application/json" };
+            if (authSession.token) {
+                headers["Authorization"] = `Bearer ${authSession.token}`;
+            }
+            return headers;
+        }
+
+        function isTokenValid() {
+            if (!authSession.token) return false;
+            if (authSession.expiresAt && Math.floor(Date.now() / 1000) > authSession.expiresAt) {
+                return false;
+            }
+            return true;
+        }
+
+        function updateUserProfileNav() {
+            const profileNav = document.getElementById("userProfileNav");
+            const userLabel = document.getElementById("loggedInUserLabel");
+            if (isTokenValid() && authSession.username) {
+                profileNav.style.display = "flex";
+                userLabel.textContent = authSession.username;
+            } else {
+                profileNav.style.display = "none";
+            }
+        }
+
+        function openLoginModal(errorMsg = "") {
+            updateLoginModalFields();
+            const errBox = document.getElementById("loginErrorMessage");
+            const errText = document.getElementById("loginErrorText");
+            if (errorMsg) {
+                errText.textContent = errorMsg;
+                errBox.style.display = "flex";
+            } else {
+                errBox.style.display = "none";
+            }
+            document.getElementById("loginModal").classList.add("open");
+        }
+
+        function closeLoginModal() {
+            document.getElementById("loginModal").classList.remove("open");
+        }
+
+        function updateLoginModalFields() {
+            const input = document.getElementById("loginApiUrl");
+            const display = document.getElementById("loginApiUrlDisplay");
+            const currentUrl = s3Config.apiUrl || "";
+            if (input) input.value = currentUrl;
+            if (display) display.textContent = currentUrl || "Not configured";
+        }
+
+        function togglePasswordVisibility() {
+            const input = document.getElementById("loginPassword");
+            const label = document.getElementById("togglePasswordLabel");
+            if (input.type === "password") {
+                input.type = "text";
+                label.textContent = "Hide";
+            } else {
+                input.type = "password";
+                label.textContent = "Show";
+            }
+        }
+
+        function toggleApiInputCollapse() {
+            const container = document.getElementById("loginApiUrlContainer");
+            const btn = document.getElementById("toggleApiInputBtn");
+            const isHidden = container.style.display === "none";
+            container.style.display = isHidden ? "block" : "none";
+            btn.textContent = isHidden ? "Done" : "Configure URL";
+        }
+
+        async function handleVaultLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById("loginUsername").value.trim();
+            const password = document.getElementById("loginPassword").value.trim();
+            const enteredApiUrl = document.getElementById("loginApiUrl").value.trim();
+            const rememberMe = document.getElementById("loginRememberMe").checked;
+            const submitBtn = document.getElementById("loginSubmitBtn");
+            const errBox = document.getElementById("loginErrorMessage");
+            const errText = document.getElementById("loginErrorText");
+
+            const targetApiUrl = (enteredApiUrl || s3Config.apiUrl || "").replace(/\/+$/, "");
+
+            if (!targetApiUrl) {
+                errText.textContent = "Please provide your AWS API Gateway Invoke URL.";
+                errBox.style.display = "flex";
+                toggleApiInputCollapse();
+                return;
+            }
+
+            errBox.style.display = "none";
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span>Signing in & validating...</span>`;
+
+            try {
+                const resp = await fetch(`${targetApiUrl}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await resp.json().catch(() => ({}));
+
+                if (!resp.ok || !data.success) {
+                    throw new Error(data.error || "Authentication failed. Check username and password.");
+                }
+
+                // Success
+                authSession.token = data.token;
+                authSession.username = data.username || username;
+                authSession.expiresAt = Math.floor(Date.now() / 1000) + (data.expiresIn || 604800);
+
+                if (rememberMe) {
+                    localStorage.setItem("cloudvault_token", authSession.token);
+                    localStorage.setItem("cloudvault_username", authSession.username);
+                    localStorage.setItem("cloudvault_token_expiry", authSession.expiresAt.toString());
+                } else {
+                    sessionStorage.setItem("cloudvault_token", authSession.token);
+                    sessionStorage.setItem("cloudvault_username", authSession.username);
+                }
+
+                s3Config.mode = "apigateway";
+                s3Config.apiUrl = targetApiUrl;
+                saveConfigToStorage();
+
+                updateUserProfileNav();
+                closeLoginModal();
+                showToast(`Welcome back, ${authSession.username}! Vault unlocked.`, "success");
+
+                // Sync user configuration from S3 & load files
+                await loadCloudConfig();
+                await refreshVaultData();
+
+            } catch (err) {
+                console.error("Login failed:", err);
+                errText.textContent = err.message || "Failed to sign in. Please verify your credentials.";
+                errBox.style.display = "flex";
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10 17 15 12 10 7"></polyline>
+                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                    </svg>
+                    <span>Sign In & Unlock Vault</span>
+                `;
+            }
+        }
+
+        function logoutVault() {
+            authSession.token = "";
+            authSession.username = "";
+            authSession.expiresAt = 0;
+            localStorage.removeItem("cloudvault_token");
+            localStorage.removeItem("cloudvault_username");
+            localStorage.removeItem("cloudvault_token_expiry");
+            sessionStorage.removeItem("cloudvault_token");
+            sessionStorage.removeItem("cloudvault_username");
+
+            updateUserProfileNav();
+            allDocuments = [];
+            filteredDocuments = [];
+            renderFiles();
+            updateStats();
+            openLoginModal();
+            showToast("Signed out of CloudVault", "info");
+        }
+
+        function handleUnauthorized() {
+            authSession.token = "";
+            authSession.username = "";
+            authSession.expiresAt = 0;
+            localStorage.removeItem("cloudvault_token");
+            localStorage.removeItem("cloudvault_username");
+            localStorage.removeItem("cloudvault_token_expiry");
+            sessionStorage.removeItem("cloudvault_token");
+            sessionStorage.removeItem("cloudvault_username");
+            updateUserProfileNav();
+            openLoginModal("Your session expired or credentials changed. Please sign in again.");
+        }
+
+        function continueInLocalMode() {
+            closeLoginModal();
+            s3Config.mode = "local";
+            saveConfigToStorage();
+            refreshVaultData();
+            showToast("Switched to Local Vault (Offline Mode)", "info");
+        }
+
+        // ==========================================
+        // CROSS-DEVICE CLOUD CONFIGURATION SYNC
+        // ==========================================
+        async function loadCloudConfig() {
+            if (!s3Config.apiUrl || !isTokenValid()) return;
+            const cleanUrl = s3Config.apiUrl.replace(/\/+$/, "");
+            try {
+                const resp = await fetch(`${cleanUrl}/vault-config`, {
+                    headers: getAuthHeaders()
+                });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                if (data.settings && Object.keys(data.settings).length > 0) {
+                    const s = data.settings;
+                    if (s.theme) {
+                        document.body.setAttribute("data-theme", s.theme);
+                        localStorage.setItem("cloudvault_theme", s.theme);
+                        updateThemeIcon(s.theme);
+                    }
+                    if (s.viewMode && (s.viewMode === "grid" || s.viewMode === "list")) {
+                        currentViewMode = s.viewMode;
+                        document.getElementById("viewGridBtn").classList.toggle("active", s.viewMode === "grid");
+                        document.getElementById("viewListBtn").classList.toggle("active", s.viewMode === "list");
+                    }
+                    if (s.sort) {
+                        currentSort = s.sort;
+                        const sortSelect = document.getElementById("sortSelect");
+                        if (sortSelect) sortSelect.value = s.sort;
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not retrieve cloud settings:", e);
+            }
+        }
+
+        async function syncConfigToCloud(extraSettings = {}) {
+            if (!s3Config.apiUrl || !isTokenValid() || s3Config.mode !== "apigateway") return;
+            const cleanUrl = s3Config.apiUrl.replace(/\/+$/, "");
+            try {
+                const currentTheme = document.body.getAttribute("data-theme") || "dark";
+                const settingsPayload = {
+                    theme: currentTheme,
+                    viewMode: currentViewMode,
+                    sort: currentSort,
+                    ...extraSettings
+                };
+                await fetch(`${cleanUrl}/vault-config`, {
+                    method: "POST",
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ settings: settingsPayload })
+                });
+            } catch (e) {
+                console.warn("Could not sync settings to cloud:", e);
+            }
+        }
+
+        // ==========================================
         // API GATEWAY + S3 PRESIGNED URL ENGINE
         // ==========================================
         async function fetchApiGatewayFiles() {
             if (!s3Config.apiUrl) return [];
             const cleanUrl = s3Config.apiUrl.replace(/\/+$/, "");
-            const resp = await fetch(`${cleanUrl}/files`);
+            const resp = await fetch(`${cleanUrl}/files`, {
+                headers: getAuthHeaders()
+            });
+            if (resp.status === 401) {
+                handleUnauthorized();
+                throw new Error("Session expired or authentication required. Please sign in.");
+            }
             if (!resp.ok) {
                 const err = await resp.json().catch(() => ({}));
                 throw new Error(err.error || `HTTP ${resp.status}`);
@@ -2177,12 +2547,17 @@
             // 1. Request presigned upload URL from Lambda
             const urlResp = await fetch(`${cleanUrl}/upload-url`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({
                     fileName: file.name,
                     contentType: file.type || "application/octet-stream"
                 })
             });
+
+            if (urlResp.status === 401) {
+                handleUnauthorized();
+                throw new Error("Session expired. Please sign in.");
+            }
 
             if (!urlResp.ok) {
                 const err = await urlResp.json().catch(() => ({}));
@@ -2219,7 +2594,13 @@
 
         async function getApiGatewayDownloadUrl(key) {
             const cleanUrl = s3Config.apiUrl.replace(/\/+$/, "");
-            const resp = await fetch(`${cleanUrl}/download-url?key=${encodeURIComponent(key)}`);
+            const resp = await fetch(`${cleanUrl}/download-url?key=${encodeURIComponent(key)}`, {
+                headers: getAuthHeaders()
+            });
+            if (resp.status === 401) {
+                handleUnauthorized();
+                throw new Error("Session expired. Please sign in.");
+            }
             if (!resp.ok) {
                 const err = await resp.json().catch(() => ({}));
                 throw new Error(err.error || "Failed to get download URL");
@@ -2231,8 +2612,13 @@
         async function deleteFileViaApiGateway(key) {
             const cleanUrl = s3Config.apiUrl.replace(/\/+$/, "");
             const resp = await fetch(`${cleanUrl}/delete?key=${encodeURIComponent(key)}`, {
-                method: "DELETE"
+                method: "DELETE",
+                headers: getAuthHeaders()
             });
+            if (resp.status === 401) {
+                handleUnauthorized();
+                throw new Error("Session expired. Please sign in.");
+            }
             if (!resp.ok) {
                 const err = await resp.json().catch(() => ({}));
                 throw new Error(err.error || "Failed to delete file");
@@ -2271,12 +2657,15 @@
             }
             initS3Client();
             updateStorageIndicator();
+            updateLoginModalFields();
+            updateUserProfileNav();
         }
 
         function saveConfigToStorage() {
             localStorage.setItem("cloudvault_s3_config", JSON.stringify(s3Config));
             initS3Client();
             updateStorageIndicator();
+            updateLoginModalFields();
         }
 
         function updateStorageIndicator() {
@@ -2345,9 +2734,22 @@
 
             try {
                 await initDatabase();
-                await refreshVaultData();
             } catch (err) {
                 console.error("Initialization failed:", err);
+            }
+
+            // Authentication & Vault Load
+            if (s3Config.mode === "apigateway") {
+                if (isTokenValid()) {
+                    updateUserProfileNav();
+                    await loadCloudConfig();
+                    await refreshVaultData();
+                } else {
+                    // Open Login Protection Modal
+                    openLoginModal();
+                }
+            } else {
+                await refreshVaultData();
             }
 
             window.addEventListener("keydown", (e) => {
@@ -2402,6 +2804,7 @@
             document.body.setAttribute("data-theme", newTheme);
             localStorage.setItem("cloudvault_theme", newTheme);
             updateThemeIcon(newTheme);
+            syncConfigToCloud({ theme: newTheme });
         }
 
         function updateThemeIcon(theme) {
@@ -2581,6 +2984,7 @@
         function handleSortChange(sortType) {
             currentSort = sortType;
             applyFiltersAndRender();
+            syncConfigToCloud({ sort: sortType });
         }
 
         function setViewMode(mode) {
@@ -2588,6 +2992,7 @@
             document.getElementById("viewGridBtn").classList.toggle("active", mode === "grid");
             document.getElementById("viewListBtn").classList.toggle("active", mode === "list");
             renderFiles();
+            syncConfigToCloud({ viewMode: mode });
         }
 
         function applyFiltersAndRender() {
@@ -3102,15 +3507,23 @@
 
             try {
                 const cleanUrl = apiUrl.replace(/\/+$/, "");
-                const resp = await fetch(`${cleanUrl}/files`);
-                if (!resp.ok) {
+                const resp = await fetch(`${cleanUrl}/files`, {
+                    headers: getAuthHeaders()
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    statusBox.style.background = "var(--accent-emerald-bg)";
+                    statusBox.style.color = "var(--accent-emerald)";
+                    statusBox.style.border = "1px solid var(--accent-emerald)";
+                    statusBox.textContent = `Connected successfully! Found ${(data.files || []).length} documents in private S3 bucket.`;
+                } else if (resp.status === 401) {
+                    statusBox.style.background = "var(--accent-emerald-bg)";
+                    statusBox.style.color = "var(--accent-emerald)";
+                    statusBox.style.border = "1px solid var(--accent-emerald)";
+                    statusBox.textContent = `API Gateway & Lambda are LIVE and protected by Zero-Cost Login! (HTTP 401: Sign in with credentials to access).`;
+                } else {
                     throw new Error(`HTTP ${resp.status}`);
                 }
-                const data = await resp.json();
-                statusBox.style.background = "var(--accent-emerald-bg)";
-                statusBox.style.color = "var(--accent-emerald)";
-                statusBox.style.border = "1px solid var(--accent-emerald)";
-                statusBox.textContent = `Connected successfully! Found ${(data.files || []).length} documents in private S3 bucket.`;
             } catch (err) {
                 console.error("API Gateway test failed:", err);
                 statusBox.style.background = "var(--accent-rose-bg)";
