@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- AWS SDK v3 Client S3 for direct browser S3 integration -->
-    <script src="https://cdn.jsdelivr.net/npm/@aws-sdk/client-s3@3.540.0/dist-es/index.js" type="module"></script>
+    <!-- AWS SDK for JavaScript (Standard Browser Distribution) -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1692.0.min.js"></script>
 
     <style>
         :root {
@@ -176,7 +176,7 @@
         .nav-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         /* Storage status pill */
@@ -255,10 +255,6 @@
             box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
         }
 
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
         /* Main Container */
         .main-wrapper {
             max-width: 1300px;
@@ -326,7 +322,7 @@
             border-radius: var(--radius-xl);
             padding: 36px 24px;
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
             position: relative;
             cursor: pointer;
             transition: var(--transition);
@@ -393,6 +389,43 @@
 
         #fileInput {
             display: none;
+        }
+
+        /* Upload Progress Bar */
+        .progress-box {
+            display: none;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .progress-box.show {
+            display: block;
+        }
+
+        .progress-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-bg {
+            height: 8px;
+            background: var(--bg-surface-subtle);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), #06b6d4);
+            transition: width 0.15s ease;
         }
 
         /* Controls: Search, Filter Tabs, Sort, View Modes */
@@ -657,7 +690,7 @@
             border-color: var(--accent-rose);
         }
 
-        /* Files Section */
+        /* Files Section Header */
         .files-header {
             display: flex;
             align-items: center;
@@ -943,7 +976,7 @@
             border: 1px solid var(--border);
             border-radius: var(--radius-xl);
             width: 100%;
-            max-width: 620px;
+            max-width: 650px;
             max-height: 90vh;
             display: flex;
             flex-direction: column;
@@ -985,6 +1018,35 @@
             color: var(--text-primary);
         }
 
+        /* Modal Tabs */
+        .modal-tab-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-surface-subtle);
+            padding: 0 20px;
+        }
+
+        .modal-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 13.5px;
+            padding: 12px 18px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .modal-tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
         .modal-body {
             padding: 24px;
             overflow-y: auto;
@@ -996,7 +1058,7 @@
             border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 12px;
             background: var(--bg-surface-subtle);
         }
@@ -1062,9 +1124,57 @@
             border: 1px solid var(--border);
             color: var(--text-secondary);
             font-size: 11px;
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 4px;
             cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-copy-code:hover {
+            color: var(--text-primary);
+            border-color: var(--border-focus);
+        }
+
+        /* Step Guide Styling */
+        .guide-step {
+            margin-bottom: 22px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .guide-step:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .guide-step-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .guide-step-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
         }
 
         /* Preview container */
@@ -1127,7 +1237,7 @@
             align-items: center;
             gap: 10px;
             min-width: 280px;
-            max-width: 420px;
+            max-width: 440px;
             pointer-events: auto;
             animation: slideInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             transition: opacity 0.2s ease, transform 0.2s ease;
@@ -1223,10 +1333,20 @@
 
             <div class="nav-actions">
                 <!-- S3 Status / Config trigger -->
-                <div class="storage-indicator" id="storageIndicatorBtn" onclick="openS3SettingsModal()" title="Click to configure AWS S3">
+                <div class="storage-indicator" id="storageIndicatorBtn" onclick="openS3SettingsModal('config')" title="Click to configure Backend API">
                     <div class="status-dot" id="statusDot"></div>
                     <span id="storageModeLabel">Local Vault (Ready)</span>
                 </div>
+
+                <!-- Sync / Refresh Button -->
+                <button class="btn-icon" onclick="refreshVaultData()" title="Reload & Sync Documents">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 2v6h-6"></path>
+                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                        <path d="M3 22v-6h6"></path>
+                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                    </svg>
+                </button>
 
                 <!-- Dark / Light Theme Toggle -->
                 <button class="btn-icon" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Theme">
@@ -1243,8 +1363,8 @@
                     </svg>
                 </button>
 
-                <!-- S3 Settings Cog -->
-                <button class="btn-icon" onclick="openS3SettingsModal()" title="AWS S3 Bucket Settings">
+                <!-- S3 Settings & Setup Guide Cog -->
+                <button class="btn-icon" onclick="openS3SettingsModal('guide')" title="AWS API Gateway & S3 Settings">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
                         <circle cx="12" cy="12" r="3"></circle>
@@ -1337,18 +1457,29 @@
                 </svg>
             </div>
             <h3>Drag & Drop documents here, or browse</h3>
-            <p>Upload PDFs, Word docs, spreadsheets, images, receipts, and source archives directly into your vault.</p>
+            <p id="uploadZoneSubtitle">Upload PDFs, Word docs, spreadsheets, images, receipts, and archives directly into your vault.</p>
             <div class="upload-hints">
                 <span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                    Safe & Secure
+                    Encrypted & Private
                 </span>
                 <span>•</span>
-                <span>Multi-file Upload Supported</span>
+                <span>Multi-file Upload</span>
                 <span>•</span>
-                <span>Instant In-Browser Indexing</span>
+                <span id="uploadHintMode">Direct S3 / Browser Storage</span>
             </div>
         </section>
+
+        <!-- Live Upload Progress Card -->
+        <div class="progress-box" id="uploadProgressBox">
+            <div class="progress-label-row">
+                <span id="progressFileLabel">Uploading document to Amazon S3...</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
+        </div>
 
         <!-- Search, Filter Pills, Sort & View Controls -->
         <section class="vault-controls">
@@ -1359,7 +1490,7 @@
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <input type="text" id="searchInput" placeholder="Search by name, extension (e.g. .pdf), or tag..." oninput="handleSearchInput(this.value)">
+                    <input type="text" id="searchInput" placeholder="Search documents by name, extension (e.g. .pdf), or tag..." oninput="handleSearchInput(this.value)">
                     <button class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()" title="Clear search">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
@@ -1479,73 +1610,155 @@
             <div class="modal-header">
                 <h3>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-                    AWS S3 Bucket Integration Settings
+                    Amazon S3 Bucket Setup & Settings
                 </h3>
                 <button class="modal-close-btn" onclick="closeS3SettingsModal()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
-            <div class="modal-body">
-                <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 18px;">
-                    You can host this static website in an S3 bucket with <b>Static Website Hosting</b> enabled. Configure your target S3 bucket here to sync or upload directly to AWS.
-                </p>
 
-                <div class="form-group">
-                    <label>Storage Backend Mode</label>
-                    <select id="configStorageMode" onchange="toggleS3Fields(this.value)">
-                        <option value="local">Local Browser Vault (IndexedDB - Zero Setup Required)</option>
-                        <option value="s3">AWS S3 Direct Bucket Sync</option>
-                    </select>
-                    <div class="form-help">IndexedDB keeps your documents saved locally in your browser immediately. Switch to AWS S3 once your bucket is created.</div>
+            <!-- Modal Tab Navigator -->
+            <div class="modal-tab-nav">
+                <button class="modal-tab-btn active" id="tabBtnConfig" onclick="switchS3ModalTab('config')">⚙️ S3 Configuration</button>
+                <button class="modal-tab-btn" id="tabBtnGuide" onclick="switchS3ModalTab('guide')">📖 Step-by-Step Guide</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- TAB 1: Configuration Form -->
+                <div id="tabContentConfig">
+                    <p style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 18px;">
+                        Connect your personal Amazon S3 bucket to store and retrieve your documents securely from AWS Amplify.
+                    </p>
+
+                    <div class="form-group">
+                        <label>Storage Backend Mode</label>
+                        <select id="configStorageMode" onchange="toggleS3Fields(this.value)">
+                            <option value="apigateway">AWS API Gateway + Lambda (Recommended - Private S3, Zero Secrets in Browser)</option>
+                            <option value="local">Local Browser Vault (IndexedDB - Offline / Zero Setup)</option>
+                            <option value="s3">Direct AWS S3 Bucket Sync (IAM Access Keys)</option>
+                        </select>
+                        <div class="form-help">API Gateway connects to your Lambda function to securely upload to your private S3 bucket without exposing credentials.</div>
+                    </div>
+
+                    <!-- API GATEWAY CONFIGURATION FIELDS -->
+                    <div id="apiGatewayFields">
+                        <div class="form-group">
+                            <label>API Gateway Invoke URL</label>
+                            <input type="text" id="configApiUrl" placeholder="https://abc123xyz.execute-api.us-east-1.amazonaws.com">
+                            <div class="form-help">Paste the Invoke URL from your AWS API Gateway dashboard.</div>
+                        </div>
+
+                        <div id="testApiStatus" style="display: none; padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 16px;"></div>
+
+                        <button type="button" class="btn-batch" onclick="testApiGatewayConnection()" style="margin-bottom: 12px; width: 100%; text-align: center; padding: 10px;">
+                            🔍 Test API Gateway & S3 Connection
+                        </button>
+                    </div>
+
+                    <!-- DIRECT S3 CREDENTIALS FIELDS -->
+                    <div id="s3CredentialsFields" style="display: none;">
+                        <div class="form-group">
+                            <label>S3 Bucket Name</label>
+                            <input type="text" id="configBucketName" placeholder="e.g. myvaultbypriyanshu-documents">
+                        </div>
+
+                        <div class="form-group">
+                            <label>AWS Region</label>
+                            <select id="configRegion">
+                                <option value="us-east-1">US East (N. Virginia) us-east-1</option>
+                                <option value="us-east-2">US East (Ohio) us-east-2</option>
+                                <option value="us-west-1">US West (N. California) us-west-1</option>
+                                <option value="us-west-2">US West (Oregon) us-west-2</option>
+                                <option value="ap-south-1">Asia Pacific (Mumbai) ap-south-1</option>
+                                <option value="ap-southeast-1">Asia Pacific (Singapore) ap-southeast-1</option>
+                                <option value="eu-west-1">Europe (Ireland) eu-west-1</option>
+                                <option value="eu-central-1">Europe (Frankfurt) eu-central-1</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>AWS Access Key ID</label>
+                            <input type="text" id="configAccessKey" placeholder="AKIAIOSFODNN7EXAMPLE">
+                        </div>
+
+                        <div class="form-group">
+                            <label>AWS Secret Access Key</label>
+                            <input type="password" id="configSecretKey" placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY">
+                        </div>
+
+                        <div id="testConnectionStatus" style="display: none; padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 16px;"></div>
+
+                        <button type="button" class="btn-batch" onclick="testS3Connection()" style="margin-bottom: 12px; width: 100%; text-align: center; padding: 10px;">
+                            🔍 Test S3 Bucket Connection
+                        </button>
+                    </div>
                 </div>
 
-                <div id="s3CredentialsFields" style="display: none;">
-                    <div class="form-group">
-                        <label>S3 Bucket Name</label>
-                        <input type="text" id="configBucketName" placeholder="e.g. my-personal-vault-docs">
+                <!-- TAB 2: Step-by-Step Guide -->
+                <div id="tabContentGuide" style="display: none;">
+                    <div class="guide-step">
+                        <div class="guide-step-title">
+                            <span class="step-num">1</span> Create Private S3 Bucket
+                        </div>
+                        <div class="guide-step-desc">
+                            In <a href="https://console.aws.amazon.com/s3/" target="_blank" style="color: var(--primary);">AWS S3</a>, create bucket named <code>myvaultbypriyanshu-documents</code>. Leave <b>"Block all public access" ENABLED</b> (checked).
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>AWS Region</label>
-                        <select id="configRegion">
-                            <option value="us-east-1">US East (N. Virginia) us-east-1</option>
-                            <option value="us-east-2">US East (Ohio) us-east-2</option>
-                            <option value="us-west-1">US West (N. California) us-west-1</option>
-                            <option value="us-west-2">US West (Oregon) us-west-2</option>
-                            <option value="ap-south-1">Asia Pacific (Mumbai) ap-south-1</option>
-                            <option value="ap-southeast-1">Asia Pacific (Singapore) ap-southeast-1</option>
-                            <option value="eu-west-1">Europe (Ireland) eu-west-1</option>
-                            <option value="eu-central-1">Europe (Frankfurt) eu-central-1</option>
-                        </select>
+                    <div class="guide-step">
+                        <div class="guide-step-title">
+                            <span class="step-num">2</span> Create Lambda Function
+                        </div>
+                        <div class="guide-step-desc">
+                            In <a href="https://console.aws.amazon.com/lambda/" target="_blank" style="color: var(--primary);">AWS Lambda</a> &rarr; <b>Create function</b> &rarr; Name: <code>myvault-backend</code>, Runtime: <b>Python 3.12</b>.<br>
+                            Paste the code from <code>lambda_function.py</code> in this project repository.<br>
+                            Under <b>Configuration &rarr; Permissions</b>, ensure the execution role has permission for S3:
+                            <div class="code-box">
+                                <button class="btn-copy-code" onclick="copyPolicyJson()">Copy Lambda S3 Policy</button>
+<pre id="policyCodeBlock">{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::myvaultbypriyanshu-documents",
+        "arn:aws:s3:::myvaultbypriyanshu-documents/*"
+      ]
+    }
+  ]
+}</pre>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>AWS Access Key ID</label>
-                        <input type="text" id="configAccessKey" placeholder="AKIAIOSFODNN7EXAMPLE">
+                    <div class="guide-step">
+                        <div class="guide-step-title">
+                            <span class="step-num">3</span> Create API Gateway
+                        </div>
+                        <div class="guide-step-desc">
+                            In <a href="https://console.aws.amazon.com/apigateway/" target="_blank" style="color: var(--primary);">AWS API Gateway</a> &rarr; Create <b>HTTP API</b> &rarr; Add integration with your Lambda <code>myvault-backend</code>.<br>
+                            Under <b>CORS</b>, enable CORS with <code>*</code> or your Amplify domain.<br>
+                            Copy the generated <b>Invoke URL</b> (e.g. <code>https://xyz123.execute-api.us-east-1.amazonaws.com</code>).
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>AWS Secret Access Key</label>
-                        <input type="password" id="configSecretKey" placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY">
-                        <div class="form-help">Stored only in your browser's private localStorage. Never sent to any third party.</div>
-                    </div>
-
-                    <div style="margin-top: 20px;">
-                        <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">S3 CORS Configuration (Required on your bucket for direct browser upload):</label>
-                        <div class="code-box">
-                            <button class="btn-copy-code" onclick="copyCorsJson()">Copy CORS JSON</button>
-<pre id="corsCodeBlock">[
-  {
-    "AllowedHeaders": ["*"],
-    "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
-    "AllowedOrigins": ["*"],
-    "ExposeHeaders": ["ETag"]
-  }
-]</pre>
+                    <div class="guide-step">
+                        <div class="guide-step-title">
+                            <span class="step-num">4</span> Connect in CloudVault
+                        </div>
+                        <div class="guide-step-desc">
+                            In the <b>⚙️ S3 Configuration</b> tab, select <b>AWS API Gateway + Lambda</b>, paste your <b>Invoke URL</b>, click <b>Test</b>, and click <b>Save Configuration</b>.
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="modal-footer">
                 <button class="btn-batch" onclick="closeS3SettingsModal()">Cancel</button>
                 <button class="btn-primary" onclick="saveS3Settings()">Save Configuration</button>
@@ -1559,7 +1772,7 @@
     <!-- Application Script Logic -->
     <script>
         // ==========================================
-        // INDEXEDDB REPOSITORY ENGINE
+        // INDEXEDDB REPOSITORY ENGINE (Local Fallback)
         // ==========================================
         const DB_NAME = "CloudVaultDB";
         const DB_VERSION = 1;
@@ -1623,6 +1836,196 @@
         }
 
         // ==========================================
+        // AWS S3 CLIENT ENGINE
+        // ==========================================
+        let s3Client = null;
+
+        function initS3Client() {
+            if (s3Config.mode === "s3" && s3Config.bucket && s3Config.accessKey && s3Config.secretKey) {
+                try {
+                    AWS.config.update({
+                        accessKeyId: s3Config.accessKey,
+                        secretAccessKey: s3Config.secretKey,
+                        region: s3Config.region || "us-east-1"
+                    });
+                    s3Client = new AWS.S3({
+                        params: { Bucket: s3Config.bucket }
+                    });
+                    return true;
+                } catch (e) {
+                    console.error("AWS S3 init error:", e);
+                    s3Client = null;
+                    return false;
+                }
+            } else {
+                s3Client = null;
+                return false;
+            }
+        }
+
+        async function fetchS3Objects() {
+            if (!s3Client) return [];
+            return new Promise((resolve, reject) => {
+                s3Client.listObjectsV2({ Bucket: s3Config.bucket }, (err, data) => {
+                    if (err) {
+                        console.error("Error listing S3 objects:", err);
+                        return reject(err);
+                    }
+                    const items = (data.Contents || []).map(item => {
+                        const catMeta = categorizeFile(item.Key);
+                        return {
+                            id: "s3_" + item.Key,
+                            name: item.Key,
+                            size: item.Size,
+                            date: new Date(item.LastModified).getTime(),
+                            category: catMeta.category,
+                            source: "s3"
+                        };
+                    });
+                    resolve(items);
+                });
+            });
+        }
+
+        function uploadFileToS3(file, onProgress) {
+            return new Promise((resolve, reject) => {
+                if (!s3Client) return reject("S3 not configured");
+                const params = {
+                    Bucket: s3Config.bucket,
+                    Key: file.name,
+                    Body: file,
+                    ContentType: file.type || "application/octet-stream"
+                };
+
+                const upload = s3Client.upload(params);
+                upload.on("httpUploadProgress", (evt) => {
+                    if (evt.total) {
+                        const percent = Math.round((evt.loaded / evt.total) * 100);
+                        if (onProgress) onProgress(percent);
+                    }
+                });
+
+                upload.send((err, data) => {
+                    if (err) return reject(err);
+                    resolve(data);
+                });
+            });
+        }
+
+        function deleteFileFromS3(key) {
+            return new Promise((resolve, reject) => {
+                if (!s3Client) return reject("S3 not configured");
+                s3Client.deleteObject({ Bucket: s3Config.bucket, Key: key }, (err, data) => {
+                    if (err) return reject(err);
+                    resolve(data);
+                });
+            });
+        }
+
+        function getS3SignedUrl(key, operation = "getObject") {
+            return new Promise((resolve, reject) => {
+                if (!s3Client) return reject("S3 not configured");
+                s3Client.getSignedUrl(operation, { Bucket: s3Config.bucket, Key: key, Expires: 3600 }, (err, url) => {
+                    if (err) return reject(err);
+                    resolve(url);
+                });
+            });
+        }
+
+        // ==========================================
+        // API GATEWAY + S3 PRESIGNED URL ENGINE
+        // ==========================================
+        async function fetchApiGatewayFiles() {
+            if (!s3Config.apiUrl) return [];
+            const cleanUrl = s3Config.apiUrl.replace(/\/+$/, "");
+            const resp = await fetch(`${cleanUrl}/files`);
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                throw new Error(err.error || `HTTP ${resp.status}`);
+            }
+            const data = await resp.json();
+            return (data.files || []).map(item => {
+                const catMeta = categorizeFile(item.name);
+                return {
+                    id: "api_" + item.name,
+                    name: item.name,
+                    size: item.size,
+                    date: item.date || Date.now(),
+                    category: catMeta.category,
+                    source: "apigateway"
+                };
+            });
+        }
+
+        async function uploadFileViaApiGateway(file, onProgress) {
+            const cleanUrl = s3Config.apiUrl.replace(/\/+$/, "");
+            // 1. Request presigned upload URL from Lambda
+            const urlResp = await fetch(`${cleanUrl}/upload-url`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    contentType: file.type || "application/octet-stream"
+                })
+            });
+
+            if (!urlResp.ok) {
+                const err = await urlResp.json().catch(() => ({}));
+                throw new Error(err.error || "Failed to generate upload URL");
+            }
+
+            const { uploadUrl } = await urlResp.json();
+
+            // 2. PUT file directly to S3 via presigned URL with progress
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open("PUT", uploadUrl, true);
+                xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+
+                xhr.upload.onprogress = (evt) => {
+                    if (evt.lengthComputable && onProgress) {
+                        const percent = Math.round((evt.loaded / evt.total) * 100);
+                        onProgress(percent);
+                    }
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve({ key: file.name });
+                    } else {
+                        reject(new Error(`S3 upload failed: HTTP ${xhr.status}`));
+                    }
+                };
+
+                xhr.onerror = () => reject(new Error("Network error during S3 upload. Check S3 CORS configuration."));
+                xhr.send(file);
+            });
+        }
+
+        async function getApiGatewayDownloadUrl(key) {
+            const cleanUrl = s3Config.apiUrl.replace(/\/+$/, "");
+            const resp = await fetch(`${cleanUrl}/download-url?key=${encodeURIComponent(key)}`);
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                throw new Error(err.error || "Failed to get download URL");
+            }
+            const data = await resp.json();
+            return data.url;
+        }
+
+        async function deleteFileViaApiGateway(key) {
+            const cleanUrl = s3Config.apiUrl.replace(/\/+$/, "");
+            const resp = await fetch(`${cleanUrl}/delete?key=${encodeURIComponent(key)}`, {
+                method: "DELETE"
+            });
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                throw new Error(err.error || "Failed to delete file");
+            }
+            return await resp.json();
+        }
+
+        // ==========================================
         // STATE MANAGEMENT
         // ==========================================
         let allDocuments = [];
@@ -1633,16 +2036,15 @@
         let currentViewMode = "grid";
         let selectedFileIds = new Set();
 
-        // AWS S3 Settings Configuration
         let s3Config = {
-            mode: "local",
+            mode: "apigateway",
+            apiUrl: "",
             bucket: "",
             region: "us-east-1",
             accessKey: "",
             secretKey: ""
         };
 
-        // Load persisted config
         function loadStoredConfig() {
             const saved = localStorage.getItem("cloudvault_s3_config");
             if (saved) {
@@ -1652,11 +2054,13 @@
                     console.error("Error loading config", e);
                 }
             }
+            initS3Client();
             updateStorageIndicator();
         }
 
         function saveConfigToStorage() {
             localStorage.setItem("cloudvault_s3_config", JSON.stringify(s3Config));
+            initS3Client();
             updateStorageIndicator();
         }
 
@@ -1665,21 +2069,33 @@
             const storageBadge = document.getElementById("storageBadge");
             const statusDot = document.getElementById("statusDot");
             const statDest = document.getElementById("statDestination");
+            const uploadSubtitle = document.getElementById("uploadZoneSubtitle");
+            const uploadHintMode = document.getElementById("uploadHintMode");
 
-            if (s3Config.mode === "s3" && s3Config.bucket) {
+            if (s3Config.mode === "apigateway" && s3Config.apiUrl) {
+                indicatorLabel.textContent = "API Gateway (Live)";
+                storageBadge.textContent = "AWS Serverless";
+                statusDot.className = "status-dot s3-mode";
+                statDest.textContent = "Private S3";
+                uploadSubtitle.textContent = "Uploads stream securely through API Gateway & Lambda into private S3.";
+                uploadHintMode.textContent = "API Gateway Connected";
+            } else if (s3Config.mode === "s3" && s3Config.bucket) {
                 indicatorLabel.textContent = `S3: ${s3Config.bucket}`;
                 storageBadge.textContent = "AWS S3";
                 statusDot.className = "status-dot s3-mode";
                 statDest.textContent = "Amazon S3";
+                uploadSubtitle.textContent = `Upload documents directly to S3 bucket: "${s3Config.bucket}".`;
+                uploadHintMode.textContent = `Direct S3 (${s3Config.region})`;
             } else {
-                indicatorLabel.textContent = "Local Vault (IndexedDB)";
+                indicatorLabel.textContent = "Local Vault (Ready)";
                 storageBadge.textContent = "Local DB";
                 statusDot.className = "status-dot";
                 statDest.textContent = "IndexedDB";
+                uploadSubtitle.textContent = "Upload personal documents safely into browser IndexedDB storage.";
+                uploadHintMode.textContent = "Local Vault (Ready)";
             }
         }
 
-        // Determine category and icon metadata based on file extension
         function categorizeFile(filename) {
             const ext = filename.split(".").pop().toLowerCase();
             
@@ -1714,14 +2130,11 @@
 
             try {
                 await initDatabase();
-                allDocuments = await dbGetAllDocuments();
-                applyFiltersAndRender();
+                await refreshVaultData();
             } catch (err) {
-                console.error("Database initialization failed:", err);
-                showToast("Failed to initialize database storage", "error");
+                console.error("Initialization failed:", err);
             }
 
-            // Keyboard shortcut '/' to search
             window.addEventListener("keydown", (e) => {
                 if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
                     e.preventDefault();
@@ -1729,6 +2142,37 @@
                 }
             });
         });
+
+        async function refreshVaultData() {
+            if (s3Config.mode === "apigateway" && s3Config.apiUrl) {
+                try {
+                    showToast("Syncing with AWS API Gateway...", "info");
+                    allDocuments = await fetchApiGatewayFiles();
+                    applyFiltersAndRender();
+                    showToast(`Synced ${allDocuments.length} files from S3`, "success");
+                } catch (e) {
+                    console.warn("API Gateway error, falling back to local DB:", e);
+                    showToast("API Gateway error: " + (e.message || "Check Invoke URL and CORS"), "error");
+                    allDocuments = await dbGetAllDocuments();
+                    applyFiltersAndRender();
+                }
+            } else if (s3Config.mode === "s3" && s3Client) {
+                try {
+                    showToast("Syncing with Amazon S3...", "info");
+                    allDocuments = await fetchS3Objects();
+                    applyFiltersAndRender();
+                    showToast(`Loaded ${allDocuments.length} files from S3`, "success");
+                } catch (e) {
+                    console.warn("Could not list from S3, falling back to local DB:", e);
+                    showToast("S3 sync error: Check CORS or credentials in settings", "error");
+                    allDocuments = await dbGetAllDocuments();
+                    applyFiltersAndRender();
+                }
+            } else {
+                allDocuments = await dbGetAllDocuments();
+                applyFiltersAndRender();
+            }
+        }
 
         // Theme Handling
         function initTheme() {
@@ -1792,41 +2236,70 @@
         async function handleFilesSelected(files) {
             if (!files || files.length === 0) return;
 
-            let addedCount = 0;
+            const progressBox = document.getElementById("uploadProgressBox");
+            const progressBarFill = document.getElementById("progressBarFill");
+            const progressLabel = document.getElementById("progressFileLabel");
+            const progressPercent = document.getElementById("progressPercentage");
+
+            progressBox.classList.add("show");
+            let successCount = 0;
+
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                const catMeta = categorizeFile(file.name);
+                progressLabel.textContent = `Uploading "${file.name}" (${i + 1}/${files.length})...`;
+                progressBarFill.style.width = "0%";
+                progressPercent.textContent = "0%";
 
-                // Create document object
-                const doc = {
-                    id: "doc_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
-                    name: file.name,
-                    size: file.size,
-                    type: file.type || "application/octet-stream",
-                    category: catMeta.category,
-                    date: Date.now(),
-                    data: file // Blob stored directly in IndexedDB
-                };
+                try {
+                    if (s3Config.mode === "apigateway" && s3Config.apiUrl) {
+                        // Upload via API Gateway & S3 Presigned URL
+                        await uploadFileViaApiGateway(file, (percent) => {
+                            progressBarFill.style.width = percent + "%";
+                            progressPercent.textContent = percent + "%";
+                        });
+                    } else if (s3Config.mode === "s3" && s3Client) {
+                        // Upload directly to Amazon S3
+                        await uploadFileToS3(file, (percent) => {
+                            progressBarFill.style.width = percent + "%";
+                            progressPercent.textContent = percent + "%";
+                        });
+                    } else {
+                        // Local IndexedDB Storage
+                        const catMeta = categorizeFile(file.name);
+                        const doc = {
+                            id: "doc_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+                            name: file.name,
+                            size: file.size,
+                            type: file.type || "application/octet-stream",
+                            category: catMeta.category,
+                            date: Date.now(),
+                            data: file
+                        };
 
-                // Generate thumbnail if image
-                if (catMeta.category === "images") {
-                    try {
-                        doc.thumbnail = await createThumbnail(file);
-                    } catch (e) {
-                        console.warn("Could not generate thumbnail", e);
+                        if (catMeta.category === "images") {
+                            try {
+                                doc.thumbnail = await createThumbnail(file);
+                            } catch (e) {}
+                        }
+
+                        await dbSaveDocument(doc);
                     }
+                    successCount++;
+                } catch (err) {
+                    console.error("Upload error:", err);
+                    showToast(`Failed to upload "${file.name}": ${err.message || err}`, "error");
                 }
-
-                await dbSaveDocument(doc);
-                allDocuments.unshift(doc);
-                addedCount++;
             }
 
-            // Reset input
-            document.getElementById("fileInput").value = "";
+            setTimeout(() => {
+                progressBox.classList.remove("show");
+            }, 600);
 
-            applyFiltersAndRender();
-            showToast(`Successfully uploaded ${addedCount} document${addedCount > 1 ? 's' : ''}`, "success");
+            document.getElementById("fileInput").value = "";
+            await refreshVaultData();
+            if (successCount > 0) {
+                showToast(`Successfully uploaded ${successCount} document${successCount > 1 ? 's' : ''}`, "success");
+            }
         }
 
         function createThumbnail(file) {
@@ -1903,7 +2376,6 @@
         }
 
         function applyFiltersAndRender() {
-            // Filter by search query and category
             filteredDocuments = allDocuments.filter(doc => {
                 const matchesSearch = !currentSearchQuery || 
                     doc.name.toLowerCase().includes(currentSearchQuery) ||
@@ -1914,7 +2386,6 @@
                 return matchesSearch && matchesCategory;
             });
 
-            // Sort
             filteredDocuments.sort((a, b) => {
                 if (currentSort === "date-desc") return b.date - a.date;
                 if (currentSort === "date-asc") return a.date - b.date;
@@ -2014,7 +2485,6 @@
             setCategoryFilter("all");
         }
 
-        // Render Grid View
         function renderGridView(container) {
             const grid = document.createElement("div");
             grid.className = "files-grid";
@@ -2066,7 +2536,6 @@
             container.appendChild(grid);
         }
 
-        // Render List View (Table)
         function renderListView(container) {
             const wrapper = document.createElement("div");
             wrapper.className = "files-table-wrapper";
@@ -2083,7 +2552,7 @@
                             <th>Document Name</th>
                             <th>Category</th>
                             <th>Size</th>
-                            <th>Date Uploaded</th>
+                            <th>Date Added</th>
                             <th style="text-align: right;">Actions</th>
                         </tr>
                     </thead>
@@ -2190,12 +2659,18 @@
             }
 
             for (let id of selectedFileIds) {
-                await dbDeleteDocument(id);
-                allDocuments = allDocuments.filter(d => d.id !== id);
+                const doc = allDocuments.find(d => d.id === id);
+                if (doc) {
+                    if (doc.source === "s3") {
+                        await deleteFileFromS3(doc.name);
+                    } else {
+                        await dbDeleteDocument(id);
+                    }
+                }
             }
 
             selectedFileIds.clear();
-            applyFiltersAndRender();
+            await refreshVaultData();
             showToast(`Deleted ${count} document${count > 1 ? 's' : ''}`, "info");
         }
 
@@ -2205,11 +2680,11 @@
 
             let downloaded = 0;
             for (let id of selectedFileIds) {
-                downloadDocument(id);
+                await downloadDocument(id);
                 downloaded++;
-                await new Promise(r => setTimeout(r, 200)); // stagger downloads
+                await new Promise(r => setTimeout(r, 200));
             }
-            showToast(`Triggered download for ${downloaded} document${downloaded > 1 ? 's' : ''}`, "success");
+            showToast(`Initiated download for ${downloaded} document${downloaded > 1 ? 's' : ''}`, "success");
         }
 
         // ==========================================
@@ -2227,31 +2702,52 @@
             const downloadBtn = document.getElementById("previewDownloadBtn");
 
             title.textContent = doc.name;
-            meta.textContent = `Uploaded: ${formatDate(doc.date)}`;
+            meta.textContent = `Date: ${formatDate(doc.date)}`;
             size.textContent = `Size: ${formatFileSize(doc.size)}`;
             downloadBtn.onclick = () => downloadDocument(id);
 
-            container.innerHTML = `<div style="color: var(--text-secondary);">Loading preview...</div>`;
+            container.innerHTML = `<div style="color: var(--text-secondary);">Loading document preview...</div>`;
             modal.classList.add("open");
 
-            const blob = doc.data;
-            const url = URL.createObjectURL(blob);
-            const cat = doc.category;
+            let url = "";
+            if (doc.source === "apigateway") {
+                try {
+                    url = await getApiGatewayDownloadUrl(doc.name);
+                } catch (e) {
+                    container.innerHTML = `<div style="color: var(--accent-rose);">Error generating preview from API Gateway: ${e.message || e}</div>`;
+                    return;
+                }
+            } else if (doc.source === "s3") {
+                try {
+                    url = await getS3SignedUrl(doc.name);
+                } catch (e) {
+                    container.innerHTML = `<div style="color: var(--accent-rose);">Error generating preview from S3: ${e.message || e}</div>`;
+                    return;
+                }
+            } else {
+                url = URL.createObjectURL(doc.data);
+            }
 
+            const cat = doc.category;
             if (cat === "images") {
                 container.innerHTML = `<img src="${url}" alt="${escapeHtml(doc.name)}">`;
             } else if (cat === "pdf") {
                 container.innerHTML = `<iframe src="${url}#toolbar=1" title="${escapeHtml(doc.name)}"></iframe>`;
             } else if (cat === "code" || doc.name.endsWith(".txt") || doc.name.endsWith(".md")) {
-                const text = await blob.text();
-                container.innerHTML = `<pre><code>${escapeHtml(text.slice(0, 100000))}</code></pre>`;
+                try {
+                    const resp = await fetch(url);
+                    const text = await resp.text();
+                    container.innerHTML = `<pre><code>${escapeHtml(text.slice(0, 100000))}</code></pre>`;
+                } catch (e) {
+                    container.innerHTML = `<iframe src="${url}"></iframe>`;
+                }
             } else {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 40px 20px;">
                         <div style="font-size: 48px; margin-bottom: 12px;">📁</div>
                         <div style="font-weight: 600; margin-bottom: 6px;">${escapeHtml(doc.name)}</div>
-                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Direct inline preview not available for this format (${doc.type || 'binary'}).</div>
-                        <button class="btn-primary" onclick="downloadDocument('${doc.id}')">Download File</button>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Inline preview not supported for this file type. Click download below to view.</div>
+                        <button class="btn-primary" onclick="downloadDocument('${doc.id}')">Download Document</button>
                     </div>
                 `;
             }
@@ -2262,18 +2758,36 @@
             document.getElementById("previewContainer").innerHTML = "";
         }
 
-        function downloadDocument(id) {
+        async function downloadDocument(id) {
             const doc = allDocuments.find(d => d.id === id);
             if (!doc) return;
 
-            const url = URL.createObjectURL(doc.data);
+            let url = "";
+            if (doc.source === "apigateway") {
+                try {
+                    url = await getApiGatewayDownloadUrl(doc.name);
+                } catch (e) {
+                    showToast("Error getting download link from API Gateway: " + e.message, "error");
+                    return;
+                }
+            } else if (doc.source === "s3") {
+                try {
+                    url = await getS3SignedUrl(doc.name);
+                } catch (e) {
+                    showToast("Error getting download link from S3: " + e.message, "error");
+                    return;
+                }
+            } else {
+                url = URL.createObjectURL(doc.data);
+            }
+
             const link = document.createElement("a");
             link.href = url;
             link.download = doc.name;
+            link.target = "_blank";
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
             showToast(`Downloading "${doc.name}"`, "info");
         }
 
@@ -2281,28 +2795,44 @@
             const doc = allDocuments.find(d => d.id === id);
             if (!doc) return;
 
-            if (!confirm(`Are you sure you want to permanently delete "${doc.name}"?`)) {
+            if (!confirm(`Are you sure you want to delete "${doc.name}"?`)) {
                 return;
             }
 
-            await dbDeleteDocument(id);
-            allDocuments = allDocuments.filter(d => d.id !== id);
-            selectedFileIds.delete(id);
-            applyFiltersAndRender();
-            showToast(`"${doc.name}" deleted`, "info");
+            try {
+                if (doc.source === "apigateway") {
+                    await deleteFileViaApiGateway(doc.name);
+                } else if (doc.source === "s3") {
+                    await deleteFileFromS3(doc.name);
+                } else {
+                    await dbDeleteDocument(id);
+                }
+                selectedFileIds.delete(id);
+                await refreshVaultData();
+                showToast(`"${doc.name}" deleted successfully`, "info");
+            } catch (err) {
+                showToast(`Error deleting file: ${err.message || err}`, "error");
+            }
         }
 
         // ==========================================
-        // S3 SETTINGS MODAL & CONFIG
+        // S3 SETTINGS & SETUP GUIDE MODAL
         // ==========================================
-        function openS3SettingsModal() {
-            document.getElementById("configStorageMode").value = s3Config.mode || "local";
+        function openS3SettingsModal(defaultTab = 'config') {
+            document.getElementById("configStorageMode").value = s3Config.mode || "apigateway";
+            document.getElementById("configApiUrl").value = s3Config.apiUrl || "";
             document.getElementById("configBucketName").value = s3Config.bucket || "";
             document.getElementById("configRegion").value = s3Config.region || "us-east-1";
             document.getElementById("configAccessKey").value = s3Config.accessKey || "";
             document.getElementById("configSecretKey").value = s3Config.secretKey || "";
-            toggleS3Fields(s3Config.mode || "local");
+            toggleS3Fields(s3Config.mode || "apigateway");
 
+            const statusBox = document.getElementById("testConnectionStatus");
+            if (statusBox) statusBox.style.display = "none";
+            const apiStatusBox = document.getElementById("testApiStatus");
+            if (apiStatusBox) apiStatusBox.style.display = "none";
+
+            switchS3ModalTab(defaultTab);
             document.getElementById("s3Modal").classList.add("open");
         }
 
@@ -2310,35 +2840,159 @@
             document.getElementById("s3Modal").classList.remove("open");
         }
 
-        function toggleS3Fields(mode) {
-            const fields = document.getElementById("s3CredentialsFields");
-            fields.style.display = mode === "s3" ? "block" : "none";
+        function switchS3ModalTab(tab) {
+            const tabConfig = document.getElementById("tabContentConfig");
+            const tabGuide = document.getElementById("tabContentGuide");
+            const btnConfig = document.getElementById("tabBtnConfig");
+            const btnGuide = document.getElementById("tabBtnGuide");
+
+            if (tab === "config") {
+                tabConfig.style.display = "block";
+                tabGuide.style.display = "none";
+                btnConfig.classList.add("active");
+                btnGuide.classList.remove("active");
+            } else {
+                tabConfig.style.display = "none";
+                tabGuide.style.display = "block";
+                btnConfig.classList.remove("active");
+                btnGuide.classList.add("active");
+            }
         }
 
-        function saveS3Settings() {
+        function toggleS3Fields(mode) {
+            const apiFields = document.getElementById("apiGatewayFields");
+            const s3Fields = document.getElementById("s3CredentialsFields");
+            if (apiFields) apiFields.style.display = mode === "apigateway" ? "block" : "none";
+            if (s3Fields) s3Fields.style.display = mode === "s3" ? "block" : "none";
+        }
+
+        async function testApiGatewayConnection() {
+            const apiUrl = document.getElementById("configApiUrl").value.trim();
+            const statusBox = document.getElementById("testApiStatus");
+
+            if (!apiUrl) {
+                statusBox.style.display = "block";
+                statusBox.style.background = "var(--accent-rose-bg)";
+                statusBox.style.color = "var(--accent-rose)";
+                statusBox.style.border = "1px solid var(--accent-rose)";
+                statusBox.textContent = "Please enter your API Gateway Invoke URL.";
+                return;
+            }
+
+            statusBox.style.display = "block";
+            statusBox.style.background = "var(--bg-surface-elevated)";
+            statusBox.style.color = "var(--text-primary)";
+            statusBox.style.border = "1px solid var(--border)";
+            statusBox.textContent = "Connecting to API Gateway & S3...";
+
+            try {
+                const cleanUrl = apiUrl.replace(/\/+$/, "");
+                const resp = await fetch(`${cleanUrl}/files`);
+                if (!resp.ok) {
+                    throw new Error(`HTTP ${resp.status}`);
+                }
+                const data = await resp.json();
+                statusBox.style.background = "var(--accent-emerald-bg)";
+                statusBox.style.color = "var(--accent-emerald)";
+                statusBox.style.border = "1px solid var(--accent-emerald)";
+                statusBox.textContent = `Connected successfully! Found ${(data.files || []).length} documents in private S3 bucket.`;
+            } catch (err) {
+                console.error("API Gateway test failed:", err);
+                statusBox.style.background = "var(--accent-rose-bg)";
+                statusBox.style.color = "var(--accent-rose)";
+                statusBox.style.border = "1px solid var(--accent-rose)";
+                statusBox.innerHTML = `<b>Connection failed:</b> ${err.message || err}<br><small>Ensure CORS is enabled in API Gateway and the Lambda role has S3 permissions.</small>`;
+            }
+        }
+
+        async function testS3Connection() {
+            const bucket = document.getElementById("configBucketName").value.trim();
+            const region = document.getElementById("configRegion").value;
+            const accessKey = document.getElementById("configAccessKey").value.trim();
+            const secretKey = document.getElementById("configSecretKey").value.trim();
+            const statusBox = document.getElementById("testConnectionStatus");
+
+            if (!bucket || !accessKey || !secretKey) {
+                statusBox.style.display = "block";
+                statusBox.style.background = "var(--accent-rose-bg)";
+                statusBox.style.color = "var(--accent-rose)";
+                statusBox.style.border = "1px solid var(--accent-rose)";
+                statusBox.textContent = "Please fill in Bucket Name, Access Key ID, and Secret Access Key.";
+                return;
+            }
+
+            statusBox.style.display = "block";
+            statusBox.style.background = "var(--bg-surface-elevated)";
+            statusBox.style.color = "var(--text-primary)";
+            statusBox.style.border = "1px solid var(--border)";
+            statusBox.textContent = "Testing connection to AWS S3...";
+
+            try {
+                const tempS3 = new AWS.S3({
+                    accessKeyId: accessKey,
+                    secretAccessKey: secretKey,
+                    region: region
+                });
+
+                await new Promise((resolve, reject) => {
+                    tempS3.listObjectsV2({ Bucket: bucket, MaxKeys: 1 }, (err, data) => {
+                        if (err) return reject(err);
+                        resolve(data);
+                    });
+                });
+
+                statusBox.style.background = "var(--accent-emerald-bg)";
+                statusBox.style.color = "var(--accent-emerald)";
+                statusBox.style.border = "1px solid var(--accent-emerald)";
+                statusBox.textContent = "Connected to S3 Successfully! Your credentials and CORS policy are working properly.";
+            } catch (err) {
+                console.error("Test connection failed:", err);
+                statusBox.style.background = "var(--accent-rose-bg)";
+                statusBox.style.color = "var(--accent-rose)";
+                statusBox.style.border = "1px solid var(--accent-rose)";
+                statusBox.innerHTML = `<b>Connection failed:</b> ${err.message || err}<br><small>If this is a CORS error, check Step 2 in the Guide tab.</small>`;
+            }
+        }
+
+        async function saveS3Settings() {
             const mode = document.getElementById("configStorageMode").value;
+            const apiUrl = document.getElementById("configApiUrl").value.trim();
             const bucket = document.getElementById("configBucketName").value.trim();
             const region = document.getElementById("configRegion").value;
             const accessKey = document.getElementById("configAccessKey").value.trim();
             const secretKey = document.getElementById("configSecretKey").value.trim();
 
+            if (mode === "apigateway" && !apiUrl) {
+                alert("Please enter your API Gateway Invoke URL.");
+                return;
+            }
             if (mode === "s3" && !bucket) {
                 alert("Please enter a valid S3 Bucket name.");
                 return;
             }
 
-            s3Config = { mode, bucket, region, accessKey, secretKey };
+            s3Config = { mode, apiUrl, bucket, region, accessKey, secretKey };
             saveConfigToStorage();
             closeS3SettingsModal();
-            showToast(mode === "s3" ? `S3 Target Configured: ${bucket}` : "Local Vault Mode active", "success");
+            showToast(mode === "apigateway" ? "Connected to API Gateway & S3" : (mode === "s3" ? `Connected to S3: ${bucket}` : "Local Vault Mode active"), "success");
+            await refreshVaultData();
         }
 
         function copyCorsJson() {
             const code = document.getElementById("corsCodeBlock").innerText;
             navigator.clipboard.writeText(code).then(() => {
-                showToast("CORS JSON copied to clipboard!", "success");
+                showToast("S3 CORS JSON copied to clipboard!", "success");
             }).catch(() => {
                 showToast("Failed to copy CORS configuration", "error");
+            });
+        }
+
+        function copyPolicyJson() {
+            const code = document.getElementById("policyCodeBlock").innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                showToast("IAM Policy JSON copied to clipboard!", "success");
+            }).catch(() => {
+                showToast("Failed to copy IAM policy", "error");
             });
         }
 
@@ -2405,7 +3059,6 @@
             }, 3500);
         }
 
-        // Close modals on Escape key or backdrop click
         window.addEventListener("keydown", (e) => {
             if (e.key === "Escape") {
                 closePreviewModal();
