@@ -329,25 +329,62 @@ Attach this policy if your IAM user needs to manage the S3 bucket, Lambda functi
 
 ---
 
-### Step 5: Connect Your Amplify Frontend
+---
+
+### Step 5: Zero-Cost Login Protection & Multi-Device Sync
+
+CloudVault includes cryptographic HMAC login protection built directly into AWS Lambda with **$0.00 cost** (no AWS Cognito, database, or external subscriptions required).
+
+#### Default Login Credentials:
+- **Username**: `priyanshu`
+- **Password**: `myvault@2026`
+
+#### Customizing Your Credentials:
+You can change your username and password at any time without modifying any code:
+1. Open your Lambda function `myvault-backend` in the AWS Console.
+2. Go to the **Configuration** tab &rarr; **Environment variables** &rarr; Click **Edit**.
+3. Add or update these keys:
+   - `VAULT_USERNAME`: Your custom username (e.g. `priyanshu`)
+   - `VAULT_PASSWORD`: Your secret master password (e.g. `MyStrongPassword#2026`)
+   - *(Optional)* `AUTH_SECRET`: Any random string to sign auth tokens
+4. Click **Save**.
+
+#### 📱 Access From Any Device (Phone, Tablet, Laptop):
+- When you visit your AWS Amplify URL on your smartphone or any computer, the **Vault Access Protected** lock screen appears.
+- Enter your **API Gateway URL**, **Username**, and **Password**.
+- Check **"Keep me logged in on this device"** so you don't have to re-enter your password each time.
+- **Cross-Device Settings Sync**: Any preference you save (such as Dark/Light theme, sorting order, or grid/list view) is automatically synced to your private S3 bucket (`_vault_internal/user_settings.json`) and loaded across all your devices!
+
+#### 💰 100% Free-Tier Cost Breakdown:
+| AWS Service | Free Tier Allowance | CloudVault Usage | Extra Cost |
+| :--- | :--- | :--- | :--- |
+| **AWS Amplify** | 1,000 build minutes/month, 5 GB stored | Static HTML/JS | **$0.00** |
+| **AWS Lambda** | 1,000,000 requests/month + 3.2M sec compute | Token auth & presigned URLs (~50ms/req) | **$0.00** |
+| **API Gateway** | 1,000,000 HTTP API calls/month | Proxies requests to Lambda | **$0.00** |
+| **Amazon S3** | 5 GB storage, 20,000 GETs, 2,000 PUTs/month | Document storage & encrypted files | **$0.00** |
+| **AWS Cognito** | Not used | Zero paid user directory costs | **$0.00** |
+
+---
+
+### Step 6: Connect Your Amplify Frontend
 
 1. Commit and push your updated files to GitHub so Amplify automatically redeploys:
    ```bash
    git add .
-   git commit -m "Configure API Gateway serverless backend"
+   git commit -m "Add zero-cost login protection and multi-device sync"
    git push
    ```
 2. Open your deployed website on Amplify (e.g., `https://main.xxxx.amplifyapp.com`).
-3. Click the **Gear icon (⚙️)** or the status pill in the top header.
-4. Select **AWS API Gateway + Lambda** as the storage mode.
-5. Paste your **API Gateway Invoke URL** (e.g. `https://xyz123.execute-api.us-east-1.amazonaws.com`).
-6. Click **🔍 Test API Gateway & S3 Connection**.
-7. Once verified, click **Save Configuration**.
+3. The **Vault Access Protected** modal will greet you.
+4. Enter your credentials and your API Gateway Invoke URL to unlock your private vault.
 
 ---
 
 ## ✨ Features Available on Your Site
 
+- 🔒 **Zero-Cost Login Protection**: Cryptographic HMAC token authentication enforced across all routes with zero AWS Cognito charges.
+- 🔄 **Cross-Device Settings Sync**: Themes, display preferences, and sort modes synchronize automatically across all devices via S3.
+- 📱 **Mobile-First Responsive Design**: Optimized for smartphones with tap targets, swipeable category pills, and a floating action button (+).
 - 🔍 **Real-Time Search**: Search documents by keyword, file extension (`.pdf`, `.png`), or tag. Press `/` to focus.
 - 📁 **Category Filters**: Instant tabs for All Files, PDFs, Images, Docs & Notes, Spreadsheets, Archives, and Code.
 - 🔀 **Multi-Sort**: Sort by Date (Newest/Oldest), Name (A-Z / Z-A), and Size (Smallest/Largest).
