@@ -70,27 +70,104 @@ CloudVault is a secure, modern, serverless document storage platform. The fronte
 
 ---
 
-### Step 2: Create the Lambda Backend Function
+### Step 2: Deploy the Lambda Backend Function
+
+You can deploy the Lambda backend using either the **AWS Management Console (Recommended / Easiest)** or via the **AWS CLI**.
+
+---
+
+#### Method A: Deploy via AWS Management Console (Easiest)
 
 1. Open the [AWS Lambda Console](https://console.aws.amazon.com/lambda/).
-2. Click **Create function**:
+2. Make sure you are in the same AWS Region as your S3 bucket (e.g. `us-east-1` or `ap-south-1`).
+3. Click **Create function**:
+   - Select **Author from scratch**.
    - **Function name**: `myvault-backend`
-   - **Runtime**: **Python 3.12** (or Python 3.11)
+   - **Runtime**: **Python 3.12**
    - **Architecture**: `x86_64`
+   - **Execution role**: Leave default (*"Create a new role with basic Lambda permissions"*).
    - Click **Create function**.
-3. Under the **Code** tab &rarr; open `lambda_function.py`:
-   - Replace everything with the code from [`lambda_function.py`](./lambda_function.py).
-   - *(Optional)* If your bucket name is different, change line 7:
-     ```python
-     BUCKET_NAME = os.environ.get("BUCKET_NAME", "myvaultbypriyanshu-documents")
-     ```
-   - Click **Deploy**.
+4. **Paste the Code**:
+   - Scroll down to the **Code source** section.
+   - Double-click `lambda_function.py` in the file tree.
+   - Select all existing placeholder code and delete it.
+   - Copy the complete content from [`lambda_function.py`](./lambda_function.py) in this repo and paste it into the editor.
+   - Click the orange **Deploy** button above the code editor.
+5. **Configure Environment Variables**:
+   - Go to the **Configuration** tab &rarr; **Environment variables** (in the left sub-menu) &rarr; Click **Edit**.
+   - Click **Add environment variable**:
+     - **Key**: `BUCKET_NAME`
+     - **Value**: `myvaultbypriyanshu-documents` *(replace with your actual bucket name)*
+   - Click **Save**.
+6. **Increase Function Timeout**:
+   - Under the **Configuration** tab &rarr; **General configuration** &rarr; Click **Edit**.
+   - Change **Timeout** from `0 min 3 sec` to `0 min 15 sec` (prevents timeouts when listing large buckets).
+   - Click **Save**.
+
+---
+
+#### Method B: Deploy via AWS CLI (PowerShell / Command Line)
+
+If you have the [AWS CLI](https://aws.amazon.com/cli/) installed and configured:
+
+1. **Package the code into a ZIP archive**:
+   ```powershell
+   Compress-Archive -Path lambda_function.py -DestinationPath lambda_function.zip -Force
+   ```
+
+2. **Create the IAM Execution Role (if you don't already have one)**:
+   ```powershell
+   # Create trust policy file
+   @'
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": { "Service": "lambda.amazonaws.com" },
+         "Action": "sts:AssumeRole"
+       }
+     ]
+   }
+   '@ | Out-File -Encoding ascii trust-policy.json
+
+   # Create the role
+   aws iam create-role --role-name myvault-lambda-role --assume-role-policy-document file://trust-policy.json
+
+   # Attach basic CloudWatch logging
+   aws iam attach-role-policy --role-name myvault-lambda-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+   ```
+
+3. **Deploy the Lambda Function**:
+   ```powershell
+   # Replace YOUR_ACCOUNT_ID with your 12-digit AWS Account ID
+   aws lambda create-function `
+     --function-name myvault-backend `
+     --runtime python3.12 `
+     --role arn:aws:iam::YOUR_ACCOUNT_ID:role/myvault-lambda-role `
+     --handler lambda_function.lambda_handler `
+     --zip-file fileb://lambda_function.zip `
+     --timeout 15 `
+     --environment "Variables={BUCKET_NAME=myvaultbypriyanshu-documents}"
+   ```
+
+4. **To update the function later when you make changes**:
+   ```powershell
+   Compress-Archive -Path lambda_function.py -DestinationPath lambda_function.zip -Force
+   aws lambda update-function-code --function-name myvault-backend --zip-file fileb://lambda_function.zip
+   ```
+
+---
 
 #### Attach S3 Permissions to the Lambda Execution Role:
-1. In the Lambda function, click the **Configuration** tab &rarr; **Permissions**.
-2. Click the role name under **Execution role** (this opens AWS IAM in a new tab).
+
+Your Lambda function must be allowed to read and write to your private S3 bucket:
+
+1. In your Lambda function, click the **Configuration** tab &rarr; **Permissions**.
+2. Under **Execution role**, click on the Role Name link (e.g. `myvault-backend-role-...`), which opens AWS IAM in a new tab.
 3. In IAM, click **Add permissions** &rarr; **Create inline policy**.
-4. Click **JSON** and paste:
+4. Click the **JSON** tab in the top right of the policy editor.
+5. Paste this policy:
 
 ```json
 {
@@ -113,7 +190,30 @@ CloudVault is a secure, modern, serverless document storage platform. The fronte
   ]
 }
 ```
-5. Click **Next**, name it `LambdaS3VaultPolicy`, and click **Create policy**.
+*(Replace `myvaultbypriyanshu-documents` with your actual bucket name if different)*.
+6. Click **Next**, enter `LambdaS3VaultPolicy` as the policy name, and click **Create policy**.
+
+---
+
+#### Test Your Lambda Function (Verification):
+
+You can test that Lambda can talk to your S3 bucket directly from the AWS Console before even touching API Gateway!
+
+1. In the Lambda function, click the **Test** tab (next to Code).
+2. **Event name**: `TestListFiles`
+3. In the **Event JSON** editor, paste:
+   ```json
+   {
+     "rawPath": "/files",
+     "requestContext": {
+       "http": {
+         "method": "GET"
+       }
+     }
+   }
+   ```
+4. Click **Test** (orange button at top right).
+5. You should see a green **"Execution result: succeeded"** banner with `statusCode: 200` and `"files": []`. If you see that, your Lambda function is 100% working and ready!
 
 ---
 
